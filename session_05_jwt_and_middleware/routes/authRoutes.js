@@ -1,5 +1,6 @@
 import express from "express";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
 const authRouter = express.Router();
 const JWT_SECRET = "MY_SECRET_KEY";
@@ -19,7 +20,7 @@ authRouter.post("/login", (req, res) => {
     });
   }
 
-  if (user.password !== password) {
+  if (!bcrypt.compareSync(password, user.password)) {
     return res.status(400).json({
       message: "Password is incorrect",
     });
@@ -68,10 +69,13 @@ authRouter.post("/login", (req, res) => {
 
 authRouter.post("/register", (req, res) => {
   const { email, password } = req.body;
+  const passwordHash = bcrypt.hashSync(password, 10);
+
   users.push({
     email,
-    password,
+    password: passwordHash,
   });
+  console.log(users);
   res.send("Registering a new user");
 });
 
